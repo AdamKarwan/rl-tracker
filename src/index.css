@@ -1,0 +1,329 @@
+:root {
+  color-scheme: dark;
+  --bg: #0d0d0d;
+  --surface: #1a1a19;
+  --border: #2c2c2a;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --text: #f0efec;
+  --text-2: #c3c2b7;
+  --muted: #898781;
+  --accent: #3987e5;
+  --up: #0ca30c;
+  --down: #e66767;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  font: 14px/1.5 system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #f9f9f7;
+    --surface: #fcfcfb;
+    --border: #e1e0d9;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --text: #0b0b0b;
+    --text-2: #52514e;
+    --accent: #2a78d6;
+    --up: #006300;
+    --down: #d03b3b;
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --series-3: #1baf7a;
+    --series-4: #eda100;
+    --series-5: #e87ba4;
+    --series-7: #6250d6;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+#root {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+h2 {
+  font-size: 14px;
+  color: var(--text-2);
+  margin-bottom: 12px;
+}
+
+button,
+.button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+button,
+.button {
+  cursor: pointer;
+}
+
+button[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.top,
+.card > header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.top {
+  margin-bottom: 16px;
+}
+
+.top nav,
+.card > header h2 {
+  flex: 1;
+}
+
+nav,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+main,
+.columns {
+  display: grid;
+  gap: 16px;
+}
+
+.columns {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.card,
+.tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 0;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.tile {
+  display: grid;
+  padding: 12px;
+}
+
+.tile span:first-child {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.tile strong {
+  font-size: 20px;
+}
+
+.tile small {
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: normal;
+}
+
+.tile .badge {
+  font-size: 15px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.badge i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+[data-trend='up'] {
+  color: var(--up);
+}
+
+[data-trend='down'] {
+  color: var(--down);
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  color: var(--muted);
+  font-weight: normal;
+  font-size: 12px;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  background: var(--bg);
+}
+
+td.actions button {
+  padding: 2px 8px;
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 64px 0;
+}
+
+.tooltip {
+  display: grid;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.tooltip strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.legend {
+  color: var(--text-2);
+}
+
+dialog {
+  width: min(480px, calc(100vw - 32px));
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+
+dialog form,
+details[open] {
+  display: grid;
+  gap: 12px;
+}
+
+label {
+  display: grid;
+  gap: 4px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+label input,
+label select,
+fieldset select {
+  width: 100%;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.fields,
+fieldset {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+fieldset {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+legend,
+summary {
+  color: var(--text-2);
+  font-size: 12px;
+  padding: 0 0 4px;
+}
+
+summary {
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
