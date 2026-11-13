@@ -114,3 +114,11 @@ export function latestSession(rows: Row[]) {
   while (start > 0 && rows[start].timestamp - rows[start - 1].timestamp < SESSION_GAP) start--
   return rows.slice(Math.max(start, 0))
 }
+
+/** Parses "3-1 450 2 1 0 4": the final score, then the scoreboard columns in their in-game order */
+export function parseStats(text: string) {
+  const tokens = text.split(/[^\d-]+/).filter(Boolean)
+  const [goalsFor, goalsAgainst] = tokens.find((t) => /^\d+-\d+$/.test(t))?.split('-').map(Number) ?? []
+  const [score, goals, assists, saves, shots] = tokens.filter((t) => /^\d+$/.test(t)).map(Number)
+  return { goalsFor, goalsAgainst, score, goals, assists, saves, shots }
+}

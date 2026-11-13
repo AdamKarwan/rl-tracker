@@ -11,6 +11,9 @@ export const rankColor = (rank: number) => TIER_COLORS[Math.floor(rank / 3)]
 export const rankLabel = (rank: number, division?: number) =>
   division === undefined || rank === SSL ? RANKS[rank] : `${RANKS[rank]} Div ${DIVISIONS[division]}`
 
+const TIER_INITIALS = ['B', 'S', 'G', 'P', 'D', 'C', 'GC']
+export const rankShort = (rank: number) => (rank === SSL ? 'SSL' : `${TIER_INITIALS[Math.floor(rank / 3)]}${(rank % 3) + 1}`)
+
 /** Moves one division, rolling over into the neighbouring rank */
 export function stepDivision(rank: number, division: number, direction: 1 | -1) {
   const position = Math.min(Math.max(rank * 4 + (rank === SSL ? 0 : division) + direction, 0), SSL * 4)
