@@ -19,6 +19,7 @@ const ranks = (values: string[]) => values.filter(Boolean).map(Number)
 
 export default function EntryForm({ entries, editing, onClose }: Props) {
   const dialog = useRef<HTMLDialogElement>(null)
+  const elo = useRef<HTMLInputElement>(null)
   const lastIn = (id: PlaylistId) => entries.findLast((e) => e.playlist === id && e.id !== editing?.id)
 
   const [form, setForm] = useState(() => {
@@ -44,6 +45,8 @@ export default function EntryForm({ entries, editing, onClose }: Props) {
 
   useEffect(() => {
     if (!dialog.current?.open) dialog.current?.showModal()
+    // showModal focuses the first control, which would be the playlist
+    elo.current?.focus()
   }, [])
 
   const { teamSize } = getPlaylist(form.playlist)
@@ -119,8 +122,8 @@ export default function EntryForm({ entries, editing, onClose }: Props) {
           Elo
           <input
             type="number"
+            ref={elo}
             required
-            autoFocus
             min={0}
             value={form.elo}
             placeholder={previous ? `Previous: ${previous.elo}` : undefined}
@@ -168,7 +171,7 @@ export default function EntryForm({ entries, editing, onClose }: Props) {
 
           <div className="fields">
             <label>
-              My team
+              My team goals
               <input
                 type="number"
                 min={0}
@@ -177,7 +180,7 @@ export default function EntryForm({ entries, editing, onClose }: Props) {
               />
             </label>
             <label>
-              Opponents
+              Opponent goals
               <input
                 type="number"
                 min={0}
