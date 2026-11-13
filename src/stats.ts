@@ -73,3 +73,13 @@ export function matchups(rows: Row[], key: 'teammateRanks' | 'opponentRanks') {
     return { label, games: group.length, ...record(group), avgDelta: mean(defined(group.map((r) => r.delta))) }
   })
 }
+
+/** The two most frequent gains and losses, falling back to the usual ±9/±10 until there is history */
+export function commonDeltas(rows: Row[]) {
+  const counts = new Map<number, number>()
+  for (const { delta } of rows) if (delta) counts.set(delta, (counts.get(delta) ?? 0) + 1)
+  const frequent = [...counts].sort((a, b) => b[1] - a[1]).map(([delta]) => delta)
+  const pick = (sign: number) =>
+    [...new Set([...frequent.filter((d) => Math.sign(d) === sign), sign * 10, sign * 9])].slice(0, 2)
+  return [...pick(1), ...pick(-1)].sort((a, b) => b - a)
+}

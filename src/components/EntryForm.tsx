@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { db, type Entry, type NewEntry } from '../db'
+import type { Draft } from './QuickAdd'
 import { DIVISIONS, PLAYLISTS, RANKS, SSL, playlist as getPlaylist, type PlaylistId } from '../ranks'
 
 interface Props {
   /** Sorted oldest first */
   entries: Entry[]
   editing?: Entry
+  /** Prefills a new entry */
+  draft?: Draft
   onClose: () => void
 }
 
@@ -17,17 +20,17 @@ const text = (value?: number) => value?.toString() ?? ''
 const optional = (value: string) => (value === '' ? undefined : Number(value))
 const ranks = (values: string[]) => values.filter(Boolean).map(Number)
 
-export default function EntryForm({ entries, editing, onClose }: Props) {
+export default function EntryForm({ entries, editing, draft, onClose }: Props) {
   const dialog = useRef<HTMLDialogElement>(null)
   const elo = useRef<HTMLInputElement>(null)
   const lastIn = (id: PlaylistId) => entries.findLast((e) => e.playlist === id && e.id !== editing?.id)
 
   const [form, setForm] = useState(() => {
-    const source = editing ?? entries.at(-1)
+    const source = editing ?? draft ?? entries.at(-1)
     return {
       timestamp: toLocalInput(editing?.timestamp ?? Date.now()),
       playlist: source?.playlist ?? ('doubles' as PlaylistId),
-      elo: text(editing?.elo),
+      elo: draft?.elo ?? text(editing?.elo),
       rank: source?.rank ?? 0,
       division: source?.division ?? 0,
       goalsFor: text(editing?.goalsFor),
