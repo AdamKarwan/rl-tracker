@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import Dashboard from './components/Dashboard'
 import EntryForm from './components/EntryForm'
 import History from './components/History'
-import QuickAdd, { type Draft } from './components/QuickAdd'
+import QuickAdd from './components/QuickAdd'
 import { db, type Entry } from './db'
 import { PLAYLISTS, type PlaylistId } from './ranks'
 import { toRows } from './stats'
@@ -15,7 +15,7 @@ export default function App() {
   const rows = useMemo(() => toRows(entries ?? []), [entries])
   const [view, setView] = useState<(typeof VIEWS)[number]>('Dashboard')
   const [filter, setFilter] = useState<PlaylistId | 'all'>('all')
-  const [form, setForm] = useState<{ editing?: Entry; draft?: Draft }>()
+  const [form, setForm] = useState<{ editing?: Entry }>()
 
   const visible = filter === 'all' ? rows : rows.filter((r) => r.playlist === filter)
   const played = PLAYLISTS.filter((p) => rows.some((r) => r.playlist === p.id))
@@ -33,7 +33,7 @@ export default function App() {
         </nav>
       </header>
 
-      <QuickAdd rows={rows} onDetails={(draft) => setForm({ draft })} />
+      <QuickAdd rows={rows} />
 
       {entries && !rows.length ? (
         <p className="empty">No entries yet. Log your first one to start tracking.</p>
@@ -52,12 +52,12 @@ export default function App() {
           {view === 'Dashboard' ? (
             <Dashboard rows={rows} visible={visible} onSelect={setFilter} />
           ) : (
-            <History rows={visible} onEdit={(editing) => setForm({ editing })} />
+            <History rows={visible} onAdd={() => setForm({})} onEdit={(editing) => setForm({ editing })} />
           )}
         </main>
       )}
 
-      {form && <EntryForm entries={rows} editing={form.editing} draft={form.draft} onClose={() => setForm(undefined)} />}
+      {form && <EntryForm entries={rows} editing={form.editing} onClose={() => setForm(undefined)} />}
     </>
   )
 }

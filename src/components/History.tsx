@@ -22,12 +22,19 @@ async function importEntries(file?: File) {
   }
 }
 
-export default function History({ rows, onEdit }: { rows: Row[]; onEdit: (entry: Entry) => void }) {
+interface Props {
+  rows: Row[]
+  onAdd: () => void
+  onEdit: (entry: Entry) => void
+}
+
+export default function History({ rows, onAdd, onEdit }: Props) {
   return (
     <section className="card">
       <header>
         <h2>History</h2>
         <div className="actions">
+          <button onClick={onAdd}>Add past entry</button>
           <button onClick={exportEntries}>Export</button>
           <label className="button">
             Import

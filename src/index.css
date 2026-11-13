@@ -115,18 +115,65 @@ button[aria-pressed='true'] {
 }
 
 .quick {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.quick > form,
+.ranks {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
+}
+
+.details {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.details form,
+.details label {
+  width: 100%;
+}
+
+.ranks > span:first-child {
+  width: 70px;
+  color: var(--text-2);
+}
+
+.segment {
+  display: inline-flex;
+}
+
+.segment > * {
+  border-radius: 0;
+  margin-left: -1px;
+  padding: 4px 8px;
+}
+
+.segment > :first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.segment > :last-child {
+  border-radius: 0 6px 6px 0;
+  width: 84px;
+}
+
+.segment button[aria-pressed='true'] {
+  background: var(--accent);
+  color: #fff;
 }
 
 .session {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  flex-basis: 100%;
   margin: 0;
   color: var(--text);
 }
@@ -142,7 +189,7 @@ button[aria-pressed='true'] {
   gap: 8px;
 }
 
-.quick input {
+.quick > form input {
   width: 130px;
 }
 
