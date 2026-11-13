@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { db, type Entry } from '../db'
 import { signed, trend } from '../format'
 import { DIVISIONS, PLAYLISTS, RANKS, SSL, stepDivision, type PlaylistId } from '../ranks'
@@ -14,41 +14,39 @@ interface Props {
 }
 
 export default function QuickAdd({ rows, onDetails }: Props) {
-  const save = useRef<HTMLButtonElement>(null)
   // Anything left unset follows the previous entry
   const [chosen, setChosen] = useState<Partial<Draft>>({})
-  const [logged, setLogged] = useState<Entry>()
+  const [loggedId, setLoggedId] = useState<number>()
 
   const playlist = chosen.playlist ?? rows.at(-1)?.playlist ?? 'doubles'
   const inPlaylist = rows.filter((r) => r.playlist === playlist)
   const previous = inPlaylist.at(-1)
-  const draft: Draft = {
-    playlist,
-    elo: chosen.elo ?? '',
-    rank: chosen.rank ?? previous?.rank ?? 0,
-    division: chosen.division ?? previous?.division ?? 0,
-  }
+  const logged = rows.find((r) => r.id === loggedId)
+  const elo = chosen.elo ?? ''
 
-  async function submit(event: FormEvent) {
-    event.preventDefault()
-    const entry = {
-      ...draft,
-      timestamp: Date.now(),
-      elo: Number(draft.elo),
-      division: draft.rank === SSL ? 0 : draft.division,
+  function rankFor() {
+    return {
+      rank: chosen.rank ?? previous?.rank ?? 0,
+      division: chosen.division ?? previous?.division ?? 0,
     }
-    const id = await db.entries.add(entry)
-    setLogged({ ...entry, id })
+  }
+  const shown = rankFor()
+
+  async function log(elo: number) {
+    const { rank, division } = rankFor()
+    setLoggedId(
+      await db.entries.add({ playlist, elo, rank, division: rank === SSL ? 0 : division, timestamp: Date.now() }),
+    )
     setChosen({ playlist })
   }
 
-  const step = (direction: 1 | -1) =>
-    setChosen({ ...chosen, ...stepDivision(draft.rank, draft.division, direction) })
-
-  function undo() {
-    db.entries.delete(logged!.id)
-    setLogged(undefined)
+  function submit(event: FormEvent) {
+    event.preventDefault()
+    log(Number(elo))
   }
+
+  const step = (direction: 1 | -1) =>
+    setChosen({ ...chosen, ...stepDivision(shown.rank, shown.division, direction) })
 
   return (
     <form className="quick card" onSubmit={submit}>
@@ -64,38 +62,12 @@ export default function QuickAdd({ rows, onDetails }: Props) {
         ))}
       </select>
 
-      {previous &&
-        commonDeltas(inPlaylist).map((delta) => (
-          <button
-            key={delta}
-            type="button"
-            data-trend={trend(delta)}
-            onClick={() => {
-              setChosen({ ...chosen, elo: String(previous.elo + delta) })
-              // Enter then saves straight away
-              save.current?.focus()
-            }}
-          >
-            {signed(delta)}
-          </button>
-        ))}
-
-      <input
-        type="number"
-        required
-        min={0}
-        aria-label="Elo"
-        placeholder={previous ? `Elo (${previous.elo})` : 'Elo'}
-        value={draft.elo}
-        onChange={(e) => setChosen({ ...chosen, elo: e.target.value })}
-      />
-
       {previous ? (
         <span className="stepper">
           <button type="button" aria-label="Division down" onClick={() => step(-1)}>
             ▼
           </button>
-          <RankBadge rank={draft.rank} division={draft.division} />
+          <RankBadge {...shown} />
           <button type="button" aria-label="Division up" onClick={() => step(1)}>
             ▲
           </button>
@@ -104,7 +76,7 @@ export default function QuickAdd({ rows, onDetails }: Props) {
         <>
           <select
             aria-label="Rank"
-            value={draft.rank}
+            value={shown.rank}
             onChange={(e) => setChosen({ ...chosen, rank: Number(e.target.value) })}
           >
             {RANKS.map((name, rank) => (
@@ -113,10 +85,10 @@ export default function QuickAdd({ rows, onDetails }: Props) {
               </option>
             ))}
           </select>
-          {draft.rank !== SSL && (
+          {shown.rank !== SSL && (
             <select
               aria-label="Division"
-              value={draft.division}
+              value={shown.division}
               onChange={(e) => setChosen({ ...chosen, division: Number(e.target.value) })}
             >
               {DIVISIONS.map((name, division) => (
@@ -129,16 +101,42 @@ export default function QuickAdd({ rows, onDetails }: Props) {
         </>
       )}
 
-      <button ref={save} type="submit" className="primary">
+      {previous &&
+        commonDeltas(inPlaylist).map((delta) => (
+          <button
+            key={delta}
+            type="button"
+            data-trend={trend(delta)}
+            title={`Log ${previous.elo + delta}`}
+            onClick={() => log(previous.elo + delta)}
+          >
+            {signed(delta)}
+          </button>
+        ))}
+
+      <input
+        type="number"
+        required
+        min={0}
+        aria-label="Elo"
+        placeholder={previous ? `Other (${previous.elo})` : 'Elo'}
+        value={elo}
+        onChange={(e) => setChosen({ ...chosen, elo: e.target.value })}
+      />
+      <button type="submit" className="primary">
         Log
       </button>
-      <button type="button" onClick={() => onDetails(draft)}>
+      <button type="button" onClick={() => onDetails({ playlist, elo, ...shown })}>
         With details…
       </button>
 
       {logged && (
         <span className="status">
-          Logged {logged.elo} <button type="button" onClick={undo}>Undo</button>
+          Logged {logged.elo} <span data-trend={trend(logged.delta)}>{signed(logged.delta)}</span>
+          <RankBadge rank={logged.rank} division={logged.division} />
+          <button type="button" onClick={() => db.entries.delete(logged.id)}>
+            Undo
+          </button>
         </span>
       )}
     </form>

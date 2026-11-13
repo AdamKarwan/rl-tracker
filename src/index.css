@@ -124,6 +124,7 @@ button[aria-pressed='true'] {
 
 .stepper {
   display: inline-flex;
+  color: var(--text);
   align-items: center;
   gap: 8px;
 }
@@ -133,6 +134,9 @@ button[aria-pressed='true'] {
 }
 
 .quick .status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--text-2);
 }
 
