@@ -358,3 +358,19 @@ dialog footer {
   justify-content: flex-end;
   gap: 8px;
 }
+
+kbd {
+  margin-left: 6px;
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  font: 11px system-ui, sans-serif;
+}
+
+/* Touch devices have no keyboard to hint at */
+@media (hover: none) {
+  kbd {
+    display: none;
+  }
+}

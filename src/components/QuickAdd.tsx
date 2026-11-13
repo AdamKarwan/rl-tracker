@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { db, type Entry } from '../db'
 import { signed, trend } from '../format'
 import { DIVISIONS, PLAYLISTS, RANKS, SSL, stepDivision, type PlaylistId } from '../ranks'
@@ -50,6 +50,23 @@ export default function QuickAdd({ rows, onDetails }: Props) {
   const step = (direction: 1 | -1) =>
     setChosen({ ...chosen, ...stepDivision(shown.rank, shown.division, direction) })
 
+  const deltas = previous ? commonDeltas(inPlaylist) : []
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      const typing = (event.target as HTMLElement).matches('input, select, textarea')
+      if (typing || event.repeat || event.metaKey || event.ctrlKey || event.altKey) return
+      if (document.querySelector('dialog[open]')) return
+      const delta = deltas[Number(event.key) - 1]
+      if (delta !== undefined) log(previous!.elo + delta)
+      else if (event.key === ']' && previous) step(1)
+      else if (event.key === '[' && previous) step(-1)
+      else if (event.key === 'z' && logged) db.entries.delete(logged.id)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   return (
     <form className="quick card" onSubmit={submit}>
       <select
@@ -67,11 +84,11 @@ export default function QuickAdd({ rows, onDetails }: Props) {
       {previous ? (
         <span className="stepper">
           <button type="button" aria-label="Division down" onClick={() => step(-1)}>
-            ▼
+            ▼<kbd>[</kbd>
           </button>
           <RankBadge {...shown} />
           <button type="button" aria-label="Division up" onClick={() => step(1)}>
-            ▲
+            ▲<kbd>]</kbd>
           </button>
         </span>
       ) : (
@@ -104,7 +121,7 @@ export default function QuickAdd({ rows, onDetails }: Props) {
       )}
 
       {previous &&
-        commonDeltas(inPlaylist).map((delta) => (
+        deltas.map((delta, i) => (
           <button
             key={delta}
             type="button"
@@ -113,6 +130,7 @@ export default function QuickAdd({ rows, onDetails }: Props) {
             onClick={() => log(previous.elo + delta)}
           >
             {signed(delta)}
+            <kbd>{i + 1}</kbd>
           </button>
         ))}
 
@@ -137,7 +155,7 @@ export default function QuickAdd({ rows, onDetails }: Props) {
           Logged {logged.elo} <span data-trend={trend(logged.delta)}>{signed(logged.delta)}</span>
           <RankBadge rank={logged.rank} division={logged.division} />
           <button type="button" onClick={() => db.entries.delete(logged.id)}>
-            Undo
+            Undo<kbd>Z</kbd>
           </button>
         </span>
       )}
