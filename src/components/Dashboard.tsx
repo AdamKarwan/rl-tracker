@@ -1,10 +1,10 @@
-import type { ReactNode } from 'react'
 import { fixed, percent, signed, trend } from '../format'
 import { PLAYLISTS, type PlaylistId } from '../ranks'
 import { matchups, summarize, type Row } from '../stats'
 import Breakdown from './Breakdown'
 import EloChart from './EloChart'
 import RankBadge from './RankBadge'
+import Tile from './Tile'
 
 interface Props {
   /** Every entry, oldest first */
@@ -12,15 +12,6 @@ interface Props {
   /** Entries matching the playlist filter */
   visible: Row[]
   onSelect: (id: PlaylistId) => void
-}
-
-function Tile({ label, children, trend }: { label: string; children: ReactNode; trend?: string }) {
-  return (
-    <div className="tile">
-      <span>{label}</span>
-      <strong data-trend={trend}>{children}</strong>
-    </div>
-  )
 }
 
 export default function Dashboard({ rows, visible, onSelect }: Props) {

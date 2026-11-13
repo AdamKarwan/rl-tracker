@@ -2,13 +2,14 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useMemo, useState } from 'react'
 import Dashboard from './components/Dashboard'
 import EntryForm from './components/EntryForm'
+import Insights from './components/Insights'
 import History from './components/History'
 import QuickAdd from './components/QuickAdd'
 import { db, type Entry } from './db'
 import { PLAYLISTS, type PlaylistId } from './ranks'
 import { toRows } from './stats'
 
-const VIEWS = ['Dashboard', 'History'] as const
+const VIEWS = ['Dashboard', 'Insights', 'History'] as const
 
 export default function App() {
   const entries = useLiveQuery(() => db.entries.toArray())
@@ -51,6 +52,8 @@ export default function App() {
           </nav>
           {view === 'Dashboard' ? (
             <Dashboard rows={rows} visible={visible} onSelect={setFilter} />
+          ) : view === 'Insights' ? (
+            <Insights rows={rows} visible={visible} />
           ) : (
             <History rows={visible} onAdd={() => setForm({})} onEdit={(editing) => setForm({ editing })} />
           )}
