@@ -1,8 +1,9 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { db, type Entry } from '../db'
 import { signed, trend } from '../format'
-import { DIVISIONS, PLAYLISTS, RANKS, SSL, type PlaylistId } from '../ranks'
+import { DIVISIONS, PLAYLISTS, RANKS, SSL, stepDivision, type PlaylistId } from '../ranks'
 import { commonDeltas, type Row } from '../stats'
+import RankBadge from './RankBadge'
 
 export type Draft = Pick<Entry, 'playlist' | 'rank' | 'division'> & { elo: string }
 
@@ -40,6 +41,9 @@ export default function QuickAdd({ rows, onDetails }: Props) {
     setLogged({ ...entry, id })
     setChosen({ playlist })
   }
+
+  const step = (direction: 1 | -1) =>
+    setChosen({ ...chosen, ...stepDivision(draft.rank, draft.division, direction) })
 
   function undo() {
     db.entries.delete(logged!.id)
@@ -86,29 +90,43 @@ export default function QuickAdd({ rows, onDetails }: Props) {
         onChange={(e) => setChosen({ ...chosen, elo: e.target.value })}
       />
 
-      <select
-        aria-label="Rank"
-        value={draft.rank}
-        onChange={(e) => setChosen({ ...chosen, rank: Number(e.target.value) })}
-      >
-        {RANKS.map((name, rank) => (
-          <option key={rank} value={rank}>
-            {name}
-          </option>
-        ))}
-      </select>
-      {draft.rank !== SSL && (
-        <select
-          aria-label="Division"
-          value={draft.division}
-          onChange={(e) => setChosen({ ...chosen, division: Number(e.target.value) })}
-        >
-          {DIVISIONS.map((name, division) => (
-            <option key={division} value={division}>
-              Div {name}
-            </option>
-          ))}
-        </select>
+      {previous ? (
+        <span className="stepper">
+          <button type="button" aria-label="Division down" onClick={() => step(-1)}>
+            ▼
+          </button>
+          <RankBadge rank={draft.rank} division={draft.division} />
+          <button type="button" aria-label="Division up" onClick={() => step(1)}>
+            ▲
+          </button>
+        </span>
+      ) : (
+        <>
+          <select
+            aria-label="Rank"
+            value={draft.rank}
+            onChange={(e) => setChosen({ ...chosen, rank: Number(e.target.value) })}
+          >
+            {RANKS.map((name, rank) => (
+              <option key={rank} value={rank}>
+                {name}
+              </option>
+            ))}
+          </select>
+          {draft.rank !== SSL && (
+            <select
+              aria-label="Division"
+              value={draft.division}
+              onChange={(e) => setChosen({ ...chosen, division: Number(e.target.value) })}
+            >
+              {DIVISIONS.map((name, division) => (
+                <option key={division} value={division}>
+                  Div {name}
+                </option>
+              ))}
+            </select>
+          )}
+        </>
       )}
 
       <button ref={save} type="submit" className="primary">
