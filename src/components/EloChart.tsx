@@ -1,5 +1,5 @@
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { dateTime, signed } from '../format'
+import { dateTime, signed, trend } from '../format'
 import { PLAYLISTS, playlist, playlistColor, rankLabel } from '../ranks'
 import type { Row } from '../stats'
 
@@ -11,7 +11,7 @@ function EloTooltip({ payload }: { payload?: { payload: Row }[] }) {
   return (
     <div className="tooltip">
       <strong>
-        {row.elo} <span data-trend={row.delta ? (row.delta > 0 ? 'up' : 'down') : undefined}>{signed(row.delta)}</span>
+        {row.elo} <span data-trend={trend(row.delta)}>{signed(row.delta)}</span>
       </strong>
       <span>{playlist(row.playlist).name}</span>
       <span>{rankLabel(row.rank, row.division)}</span>
