@@ -24,8 +24,8 @@ export function toRows(entries: Entry[]): Row[] {
     })
 }
 
-const mean = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : null)
-const defined = (values: (number | undefined | null)[]) => values.filter((v) => v != null) as number[]
+export const mean = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : null)
+export const defined = (values: (number | undefined | null)[]) => values.filter((v) => v != null) as number[]
 const sum = (values: number[]) => values.reduce((a, b) => a + b, 0)
 
 function record(rows: Row[]) {
@@ -62,18 +62,20 @@ export function summarize(rows: Row[]) {
   }
 }
 
-const MATCHUPS = ['Lower ranked', 'Same rank', 'Higher ranked']
-
-/** Groups games by how the average teammate/opponent rank compares to the player's own */
-export function matchups(rows: Row[], key: 'teammateRanks' | 'opponentRanks') {
-  return MATCHUPS.map((label, i) => {
-    const group = rows.filter((r) => {
-      const average = mean(r[key] ?? [])
-      return average !== null && Math.sign(Math.round(average - r.rank)) === i - 1
-    })
+/** Summarises the rows under each label, `indexOf` returning the label a row belongs to or undefined to skip it */
+export function breakdown(rows: Row[], labels: string[], indexOf: (row: Row) => number | undefined) {
+  return labels.map((label, i) => {
+    const group = rows.filter((r) => indexOf(r) === i)
     return { label, games: group.length, ...record(group), avgDelta: mean(defined(group.map((r) => r.delta))) }
   })
 }
+
+/** Groups games by how the average teammate/opponent rank compares to the player's own */
+export const matchups = (rows: Row[], key: 'teammateRanks' | 'opponentRanks') =>
+  breakdown(rows, ['Lower ranked', 'Same rank', 'Higher ranked'], (r) => {
+    const average = mean(r[key] ?? [])
+    return average === null ? undefined : Math.sign(Math.round(average - r.rank)) + 1
+  })
 
 /** The two most frequent gains and losses, falling back to the usual ±9/±10 until there is history */
 export function commonDeltas(rows: Row[]) {
@@ -108,12 +110,17 @@ export function predictRank(rows: Row[], elo: number) {
 
 const SESSION_GAP = 3_600_000
 
-/** The latest run of entries with less than an hour between each */
-export function latestSession(rows: Row[]) {
-  let start = rows.length - 1
-  while (start > 0 && rows[start].timestamp - rows[start - 1].timestamp < SESSION_GAP) start--
-  return rows.slice(Math.max(start, 0))
+/** Splits rows into runs with less than an hour between each entry */
+export function sessions(rows: Row[]) {
+  const result: Row[][] = []
+  rows.forEach((row, i) => {
+    if (i && row.timestamp - rows[i - 1].timestamp < SESSION_GAP) result.at(-1)!.push(row)
+    else result.push([row])
+  })
+  return result
 }
+
+export const latestSession = (rows: Row[]) => sessions(rows).at(-1) ?? []
 
 /** Parses "3-1 450 2 1 0 4": the final score, then the scoreboard columns in their in-game order */
 export function parseStats(text: string) {

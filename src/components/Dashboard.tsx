@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { fixed, percent, signed, trend } from '../format'
 import { PLAYLISTS, type PlaylistId } from '../ranks'
 import { matchups, summarize, type Row } from '../stats'
+import Breakdown from './Breakdown'
 import EloChart from './EloChart'
 import RankBadge from './RankBadge'
 
@@ -19,42 +20,6 @@ function Tile({ label, children, trend }: { label: string; children: ReactNode; 
       <span>{label}</span>
       <strong data-trend={trend}>{children}</strong>
     </div>
-  )
-}
-
-function Matchups({ title, rows, field }: { title: string; rows: Row[]; field: 'teammateRanks' | 'opponentRanks' }) {
-  const groups = matchups(rows, field)
-  if (!groups.some((g) => g.games)) return null
-  return (
-    <section className="card">
-      <h2>{title}</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Compared to me</th>
-            <th className="num">Games</th>
-            <th className="num">W–L</th>
-            <th className="num">Win rate</th>
-            <th className="num">Avg ±</th>
-          </tr>
-        </thead>
-        <tbody>
-          {groups.map((g) => (
-            <tr key={g.label}>
-              <td>{g.label}</td>
-              <td className="num">{g.games}</td>
-              <td className="num">
-                {g.wins}–{g.losses}
-              </td>
-              <td className="num">{percent(g.winRate)}</td>
-              <td className="num" data-trend={trend(g.avgDelta)}>
-                {signed(g.avgDelta, 1)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
   )
 }
 
@@ -155,8 +120,8 @@ export default function Dashboard({ rows, visible, onSelect }: Props) {
       </section>
 
       <div className="columns">
-        <Matchups title="Against opponents" rows={visible} field="opponentRanks" />
-        <Matchups title="With teammates" rows={visible} field="teammateRanks" />
+        <Breakdown title="Against opponents" heading="Compared to me" groups={matchups(visible, 'opponentRanks')} />
+        <Breakdown title="With teammates" heading="Compared to me" groups={matchups(visible, 'teammateRanks')} />
       </div>
     </>
   )
