@@ -1,4 +1,5 @@
 import type { Entry } from './db'
+import { stepDivision } from './ranks'
 
 export interface Row extends Entry {
   /** Elo change from the previous entry in the same playlist */
@@ -82,4 +83,25 @@ export function commonDeltas(rows: Row[]) {
   const pick = (sign: number) =>
     [...new Set([...frequent.filter((d) => Math.sign(d) === sign), sign * 10, sign * 9])].slice(0, 2)
   return [...pick(1), ...pick(-1)].sort((a, b) => b - a)
+}
+
+const position = (row: Row) => row.rank * 4 + row.division
+
+/**
+ * Predicts the rank after a game from the latest division changes seen in a playlist's rows.
+ * Promotion and demotion points are learned separately as the game keeps a buffer between them.
+ */
+export function predictRank(rows: Row[], elo: number) {
+  const previous = rows.at(-1)
+  if (!previous) return undefined
+  let up = Infinity
+  let down = -Infinity
+  rows.forEach((row, i) => {
+    if (i === 0 || position(rows[i - 1]) !== position(previous)) return
+    if (position(row) === position(previous) + 1) up = row.elo
+    if (position(row) === position(previous) - 1) down = row.elo
+  })
+  if (elo > previous.elo && elo >= up) return stepDivision(previous.rank, previous.division, 1)
+  if (elo < previous.elo && elo <= down) return stepDivision(previous.rank, previous.division, -1)
+  return previous
 }

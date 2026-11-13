@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { db, type Entry } from '../db'
 import { signed, trend } from '../format'
 import { DIVISIONS, PLAYLISTS, RANKS, SSL, stepDivision, type PlaylistId } from '../ranks'
-import { commonDeltas, type Row } from '../stats'
+import { commonDeltas, predictRank, type Row } from '../stats'
 import RankBadge from './RankBadge'
 
 export type Draft = Pick<Entry, 'playlist' | 'rank' | 'division'> & { elo: string }
@@ -24,16 +24,18 @@ export default function QuickAdd({ rows, onDetails }: Props) {
   const logged = rows.find((r) => r.id === loggedId)
   const elo = chosen.elo ?? ''
 
-  function rankFor() {
+  /** A manual choice wins; otherwise the division follows the elo once a boundary has been seen */
+  function rankFor(elo: number) {
+    const base = (chosen.rank ?? chosen.division) === undefined ? predictRank(inPlaylist, elo) : previous
     return {
-      rank: chosen.rank ?? previous?.rank ?? 0,
-      division: chosen.division ?? previous?.division ?? 0,
+      rank: chosen.rank ?? base?.rank ?? 0,
+      division: chosen.division ?? base?.division ?? 0,
     }
   }
-  const shown = rankFor()
+  const shown = rankFor(elo === '' ? (previous?.elo ?? 0) : Number(elo))
 
   async function log(elo: number) {
-    const { rank, division } = rankFor()
+    const { rank, division } = rankFor(elo)
     setLoggedId(
       await db.entries.add({ playlist, elo, rank, division: rank === SSL ? 0 : division, timestamp: Date.now() }),
     )
