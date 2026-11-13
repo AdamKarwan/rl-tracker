@@ -122,6 +122,19 @@ button[aria-pressed='true'] {
   margin-bottom: 16px;
 }
 
+.session {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--text);
+}
+
+.session span:first-child {
+  color: var(--muted);
+}
+
 .stepper {
   display: inline-flex;
   color: var(--text);

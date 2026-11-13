@@ -105,3 +105,12 @@ export function predictRank(rows: Row[], elo: number) {
   if (elo < previous.elo && elo <= down) return stepDivision(previous.rank, previous.division, -1)
   return previous
 }
+
+const SESSION_GAP = 3_600_000
+
+/** The latest run of entries with less than an hour between each */
+export function latestSession(rows: Row[]) {
+  let start = rows.length - 1
+  while (start > 0 && rows[start].timestamp - rows[start - 1].timestamp < SESSION_GAP) start--
+  return rows.slice(Math.max(start, 0))
+}

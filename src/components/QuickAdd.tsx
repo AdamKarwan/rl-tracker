@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { db, type Entry } from '../db'
 import { signed, trend } from '../format'
 import { DIVISIONS, PLAYLISTS, RANKS, SSL, stepDivision, type PlaylistId } from '../ranks'
-import { commonDeltas, predictRank, type Row } from '../stats'
+import { commonDeltas, latestSession, predictRank, summarize, type Row } from '../stats'
 import RankBadge from './RankBadge'
 
 export type Draft = Pick<Entry, 'playlist' | 'rank' | 'division'> & { elo: string }
@@ -50,6 +50,7 @@ export default function QuickAdd({ rows, onDetails }: Props) {
   const step = (direction: 1 | -1) =>
     setChosen({ ...chosen, ...stepDivision(shown.rank, shown.division, direction) })
 
+  const session = summarize(latestSession(rows))
   const deltas = previous ? commonDeltas(inPlaylist) : []
 
   useEffect(() => {
@@ -158,6 +159,20 @@ export default function QuickAdd({ rows, onDetails }: Props) {
             Undo<kbd>Z</kbd>
           </button>
         </span>
+      )}
+
+      {rows.length > 0 && (
+        <p className="session">
+          <span>Latest session</span>
+          <span>
+            {session.entries} {session.entries === 1 ? 'game' : 'games'}
+          </span>
+          <span>
+            {session.wins}–{session.losses}
+          </span>
+          <span data-trend={trend(session.net)}>{signed(session.net)} elo</span>
+          {session.streak && <span>Streak {session.streak}</span>}
+        </p>
       )}
     </form>
   )
